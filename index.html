@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Missão Dados</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one centered "console" column; each screen is a step in a mission, with a progress track on top */
+:root{
+  --bg:#eef2f8; --surface:#ffffff; --ink:#0f1b33; --muted:#5a6680;
+  --line:#d6deeb; --brand:#123f8c; --brand-ink:#ffffff; --accent:#f07b10;
+  --accent-soft:#fde6cf; --ok:#14804a; --ok-soft:#d9f2e4; --bad:#b4232c; --bad-soft:#fbe0e2;
+  --display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0b1222; --surface:#141e34; --ink:#e8eefb; --muted:#9aa8c4; --line:#2a3858;
+  --brand:#6f9cf0; --brand-ink:#0b1222; --accent:#ff9a3d; --accent-soft:#3a2614;
+  --ok:#4fd18b; --ok-soft:#123222; --bad:#ff7b84; --bad-soft:#3a1519; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0b1222; --surface:#141e34; --ink:#e8eefb; --muted:#9aa8c4; --line:#2a3858;
+  --brand:#6f9cf0; --brand-ink:#0b1222; --accent:#ff9a3d; --accent-soft:#3a2614;
+  --ok:#4fd18b; --ok-soft:#123222; --bad:#ff7b84; --bad-soft:#3a1519; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 48px}
+.wrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.brandmark{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.01em}
+.brandmark span{color:var(--accent)}
+.score{font-family:var(--mono);font-size:.9rem;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+.score b{color:var(--accent)}
+.track{display:flex;gap:6px}
+.track i{flex:1;height:6px;border-radius:3px;background:var(--line);transition:background .3s}
+.track i.on{background:var(--brand)} .track i.now{background:var(--accent)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:clamp(20px,4vw,36px);display:flex;flex-direction:column;gap:18px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700}
+h1,h2{font-family:var(--display);letter-spacing:-.02em;text-wrap:balance;margin:0;line-height:1.08}
+h1{font-size:clamp(2.2rem,7vw,3.6rem);font-weight:800}
+h2{font-size:clamp(1.4rem,4vw,2rem);font-weight:700}
+p{margin:0;max-width:62ch}
+.lead{font-size:1.1rem;color:var(--muted)}
+.mission-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.mission{border:1px dashed var(--line);border-radius:12px;padding:14px 16px;display:flex;flex-direction:column;gap:4px}
+.mission strong{font-family:var(--display);font-size:1.05rem}
+.mission small{color:var(--muted)}
+label.field{display:flex;flex-direction:column;gap:6px;font-weight:700}
+input[type=text]{font:inherit;font-size:1.1rem;padding:14px 16px;border-radius:12px;border:2px solid var(--line);background:var(--bg);color:var(--ink)}
+input[type=text]:focus{outline:none;border-color:var(--brand)}
+.btn{font:inherit;font-family:var(--display);font-weight:700;font-size:1.1rem;border:0;border-radius:12px;padding:14px 22px;cursor:pointer;background:var(--brand);color:var(--brand-ink);align-self:flex-start;transition:transform .15s}
+.btn:hover{transform:translateY(-2px)} .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn.alt{background:var(--accent);color:#1d0e00}
+.btn:focus-visible,.opt:focus-visible,.prod:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.opt{font:inherit;text-align:left;background:var(--bg);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:14px 16px;cursor:pointer;transition:border-color .15s,transform .15s}
+.opt:hover{border-color:var(--brand);transform:translateY(-1px)}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)}
+.opt:disabled{cursor:default;transform:none}
+.qcount{font-family:var(--mono);color:var(--muted);font-size:.85rem}
+.feedback{border-radius:12px;padding:14px 16px;font-weight:700}
+.feedback.ok{background:var(--ok-soft);color:var(--ok)} .feedback.no{background:var(--bad-soft);color:var(--bad)}
+.feedback span{display:block;font-weight:400;color:var(--ink);margin-top:4px}
+.result-hero{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.badge{width:84px;height:84px;border-radius:20px;background:var(--accent);color:#1d0e00;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:2rem;flex:none}
+.facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.fact{background:var(--bg);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fact b{font-family:var(--mono);font-size:.75rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tablebox{overflow-x:auto;border:1px solid var(--line);border-radius:12px}
+table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:.92rem;font-variant-numeric:tabular-nums;min-width:520px}
+th,td{padding:9px 12px;text-align:right;border-bottom:1px solid var(--line)}
+th:first-child,td:first-child{text-align:left}
+thead th{background:var(--bg);font-size:.78rem;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+tr.temp td{color:var(--accent);font-weight:700}
+tr.total td{font-weight:700;background:var(--bg)}
+.prod{font:inherit;background:none;border:0;color:var(--brand);cursor:pointer;padding:0;text-decoration:underline;text-underline-offset:3px}
+tr.sel td{background:var(--accent-soft)}
+.chart{display:flex;flex-direction:column;gap:8px}
+.chart-title{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.bars{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:end;height:150px;border-bottom:2px solid var(--line);padding-top:20px}
+.bar{background:var(--brand);border-radius:6px 6px 0 0;position:relative;transition:height .4s ease;min-height:2px}
+.bar span{position:absolute;top:-20px;left:0;right:0;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--ink)}
+.barlabels{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;text-align:center;font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.card-final{border-radius:18px;padding:clamp(20px,4vw,32px);background:var(--brand);color:var(--brand-ink);display:flex;flex-direction:column;gap:10px}
+.card-final h2{font-size:clamp(1.6rem,5vw,2.4rem)}
+.card-final .big{font-family:var(--mono);font-size:clamp(2.4rem,9vw,3.6rem);font-weight:700;line-height:1}
+.card-final small{opacity:.8}
+.row{display:flex;gap:12px;flex-wrap:wrap}
+.hint{font-size:.9rem;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brandmark">Missão <span>Dados</span></div>
+    <div class="score" id="scorebox">Pontos: <b id="pts">0</b></div>
+  </header>
+  <div class="track" id="track" aria-hidden="true"></div>
+  <main id="app" aria-live="polite"></main>
+</div>
+
+<script>
+const PROFILES = {
+  ana:{name:"Analista de Dados / BI",ico:"BI",tag:"Você transforma bagunça em resposta.",
+    dia:"Monta planilhas e painéis (dashboards) que mostram o que está acontecendo numa empresa e ajuda a decidir o que fazer.",
+    tools:"Excel, Power BI, SQL",onde:"Varejo, saúde, bancos, indústria, governo: toda empresa que vende ou atende alguém.",
+    passo:"Planilhas avançadas, Power BI e lógica de programação."},
+  cie:{name:"Cientista de Dados / IA",ico:"IA",tag:"Você quer saber o que vai acontecer.",
+    dia:"Usa estatística e programação para encontrar padrões e criar modelos que preveem coisas, como a recomendação da sua série favorita.",
+    tools:"Python, estatística, aprendizado de máquina",onde:"Streaming, fintechs, e-commerce, pesquisa, agronegócio.",
+    passo:"Lógica de programação, Python e fundamentos de estatística."},
+  eng:{name:"Engenheiro(a) de Dados",ico:"ED",tag:"Você constrói o encanamento.",
+    dia:"Cria os caminhos por onde os dados viajam: coleta, limpa, guarda e entrega tudo pronto para análise.",
+    tools:"SQL, bancos de dados, nuvem, Python",onde:"Empresas de tecnologia, bancos, grandes redes de lojas.",
+    passo:"Banco de dados, SQL e redes/nuvem."},
+  sec:{name:"Especialista em Cibersegurança",ico:"CS",tag:"Você é o escudo.",
+    dia:"Protege sistemas e dados contra ataques, investiga incidentes e garante que a empresa cumpra a LGPD.",
+    tools:"Redes, Linux, ferramentas de monitoramento",onde:"Bancos, hospitais, governo, qualquer empresa com dados de clientes.",
+    passo:"Redes de computadores, sistemas operacionais e segurança da informação."},
+  ux:{name:"Designer UX / Produto Digital",ico:"UX",tag:"Você pensa primeiro nas pessoas.",
+    dia:"Pesquisa como as pessoas usam apps e sites e usa dados de uso para criar telas mais fáceis e bonitas.",
+    tools:"Figma, pesquisa com usuários, métricas de uso",onde:"Startups, agências, apps de delivery, bancos digitais.",
+    passo:"Design gráfico, UX/UI e prototipação."},
+  dev:{name:"Desenvolvedor(a) de Sistemas",ico:"DEV",tag:"Você faz a coisa existir.",
+    dia:"Programa sites, apps e sistemas, e cada clique que alguém dá vira um dado que alguém vai analisar.",
+    tools:"JavaScript, Python, Java, Git",onde:"Software houses, startups, times de TI de qualquer empresa.",
+    passo:"Lógica de programação, desenvolvimento web e banco de dados."}
+};
+const QUIZ = [
+  {q:"Num trabalho em grupo, qual parte você pega primeiro?",o:[
+    ["Organizar as informações numa tabela","ana"],["Pesquisar e levantar hipóteses","cie"],
+    ["Montar a estrutura e dividir as tarefas","eng"],["Conferir se tem erro ou risco","sec"],
+    ["Deixar a apresentação bonita e clara","ux"],["Fazer a parte prática funcionar","dev"]]},
+  {q:"Seu celular travou. O que você faz?",o:[
+    ["Pesquiso o padrão: quando isso costuma acontecer?","ana"],["Tento entender a causa a fundo","cie"],
+    ["Vejo o que está ocupando memória e organizo","eng"],["Desconfio de algum app suspeito","sec"],
+    ["Penso: esse app é confuso de usar","ux"],["Fuço nas configurações até resolver","dev"]]},
+  {q:"Que tipo de vídeo te prende no YouTube ou TikTok?",o:[
+    ["Rankings e comparações com números","ana"],["Curiosidades de ciência e o futuro","cie"],
+    ["Como as coisas são feitas por dentro","eng"],["Golpes, hackers e investigações","sec"],
+    ["Design, moda, antes e depois","ux"],["Gente criando apps, jogos e projetos","dev"]]},
+  {q:"Qual frase mais combina com você?",o:[
+    ["Me mostra os números que eu te digo","ana"],["E se a gente conseguisse prever isso?","cie"],
+    ["Tem que funcionar sempre, sem falhar","eng"],["Confiar é bom, verificar é melhor","sec"],
+    ["Se ninguém entende, não está pronto","ux"],["Deixa que eu construo","dev"]]},
+  {q:"Num jogo, você é quem…",o:[
+    ["Olha as estatísticas antes de escolher","ana"],["Descobre a estratégia escondida","cie"],
+    ["Monta a base mais eficiente","eng"],["Protege o time e vigia o mapa","sec"],
+    ["Escolhe a skin e o visual do time","ux"],["Cria mods ou mapas próprios","dev"]]},
+  {q:"Se ganhasse um estágio amanhã, onde gostaria de estar?",o:[
+    ["No time que decide as metas da loja","ana"],["No laboratório de inteligência artificial","cie"],
+    ["Na sala dos servidores e da nuvem","eng"],["Na central que detecta ataques","sec"],
+    ["No time que cria o app","ux"],["No time que programa o app","dev"]]}
+];
+const DAYS=["Seg","Ter","Qua","Qui","Sex"];
+const DATA=[
+  ["Café coado",[42,38,45,40,55]],["Cappuccino",[18,20,22,25,41]],
+  ["Pão de queijo",[35,30,33,36,48]],["Bolo de cenoura",[12,10,14,11,9]],
+  ["Suco natural",[8,9,15,22,30]]
+];
+const TEMP=[17,18,23,27,31];
+const TOTAL=DAYS.map((_,i)=>DATA.reduce((s,r)=>s+r[1][i],0));
+const CHALLENGE=[
+  {q:"Qual produto mais vendeu na semana inteira?",o:["Pão de queijo","Café coado","Cappuccino","Suco natural"],a:1,
+   why:"Café coado somou 220 unidades. Somar a linha toda é a primeira coisa que um analista faz."},
+  {q:"As vendas de suco quase quadruplicaram. Olhando a tabela, o que parece explicar isso?",o:["O preço do suco caiu","A temperatura subiu durante a semana","Segunda é dia de suco","Foi pura sorte"],a:1,
+   why:"Suco e temperatura sobem juntos (de 17 °C para 31 °C). Isso se chama correlação, e é o que a ciência de dados procura."},
+  {q:"Você é gerente do café. Qual decisão os dados apoiam?",o:["Fechar mais cedo na sexta","Tirar o café coado do cardápio","Reforçar equipe e estoque na sexta-feira","Dados não ajudam a decidir nada"],a:2,
+   why:"Sexta vendeu 183 itens, o maior dia da semana. Decisão baseada em dados: mais gente e mais estoque quando o movimento é maior."}
+];
+const STEPS=1+QUIZ.length+1+CHALLENGE.length+1;
+let S={name:"",step:0,points:0,votes:{},profile:null,ci:0,sel:-1,right:0};
+const app=document.getElementById("app"),pts=document.getElementById("pts"),track=document.getElementById("track");
+track.innerHTML=Array.from({length:STEPS},()=>"<i></i>").join("");
+function progress(){[...track.children].forEach((el,i)=>{el.className=i<S.step?"on":i===S.step?"now":""});pts.textContent=S.points}
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+function intro(){
+  S.step=0;progress();
+  app.innerHTML=`<section class="panel">
+    <div class="eyebrow">Experience Day · Senac</div>
+    <h1>Quem você quer ser na era dos dados?</h1>
+    <p class="lead">Duas missões rápidas. Na primeira, descobrimos o seu perfil. Na segunda, você trabalha como profissional de dados de verdade e ganha pontos.</p>
+    <div class="mission-list">
+      <div class="mission"><strong>Missão 1 · Perfil</strong><small>6 perguntas sobre você. Sem resposta errada.</small></div>
+      <div class="mission"><strong>Missão 2 · Detetive</strong><small>Analise as vendas de um café e tome decisões. Vale até 300 pontos.</small></div>
+    </div>
+    <label class="field" for="nm">Seu nome ou apelido
+      <input type="text" id="nm" maxlength="24" autocomplete="off" placeholder="Ex.: Ana do 3º B"></label>
+    <button class="btn alt" id="go" disabled>Começar missão</button>
+  </section>`;
+  const nm=document.getElementById("nm"),go=document.getElementById("go");
+  nm.addEventListener("input",()=>go.disabled=!nm.value.trim());
+  nm.addEventListener("keydown",e=>{if(e.key==="Enter"&&nm.value.trim())go.click()});
+  go.onclick=()=>{S.name=nm.value.trim();quiz(0)};
+}
+function quiz(i){
+  S.step=1+i;progress();const Q=QUIZ[i];
+  app.innerHTML=`<section class="panel">
+    <div class="eyebrow">Missão 1 · Perfil</div>
+    <span class="qcount">Pergunta ${i+1} de ${QUIZ.length}</span>
+    <h2>${Q.q}</h2>
+    <div class="opts">${Q.o.map((o,k)=>`<button class="opt" data-k="${k}">${o[0]}</button>`).join("")}</div>
+  </section>`;
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const p=Q.o[b.dataset.k][1];S.votes[p]=(S.votes[p]||0)+1;
+    i+1<QUIZ.length?quiz(i+1):profile();
+  });
+}
+function profile(){
+  const order=["ana","cie","eng","sec","ux","dev"];
+  S.profile=order.reduce((best,k)=>(S.votes[k]||0)>(S.votes[best]||0)?k:best,order[0]);
+  S.step=1+QUIZ.length;progress();const P=PROFILES[S.profile];
+  app.innerHTML=`<section class="panel">
+    <div class="eyebrow">Seu perfil, ${esc(S.name)}</div>
+    <div class="result-hero"><div class="badge">${P.ico}</div>
+      <div><h2>${P.name}</h2><p class="lead">${P.tag}</p></div></div>
+    <p>${P.dia}</p>
+    <div class="facts">
+      <div class="fact"><b>Ferramentas</b>${P.tools}</div>
+      <div class="fact"><b>Onde trabalha</b>${P.onde}</div>
+      <div class="fact"><b>Primeiros passos</b>${P.passo}</div>
+    </div>
+    <p class="hint">Todas essas profissões usam dados. Agora vem a parte prática: todo perfil começa analisando.</p>
+    <button class="btn alt" id="go">Ir para a Missão 2</button>
+  </section>`;
+  document.getElementById("go").onclick=()=>challenge(0);
+}
+function tableHTML(){
+  return `<div class="tablebox"><table>
+    <thead><tr><th>Produto</th>${DAYS.map(d=>`<th>${d}</th>`).join("")}</tr></thead>
+    <tbody>${DATA.map((r,k)=>`<tr class="${k===S.sel?"sel":""}"><td><button class="prod" data-k="${k}">${r[0]}</button></td>${r[1].map(v=>`<td>${v}</td>`).join("")}</tr>`).join("")}
+    <tr class="total"><td><button class="prod" data-k="-1">Total do dia</button></td>${TOTAL.map(v=>`<td>${v}</td>`).join("")}</tr>
+    <tr class="temp"><td>Temperatura</td>${TEMP.map(v=>`<td>${v} °C</td>`).join("")}</tr></tbody>
+  </table></div>`;
+}
+function chartHTML(){
+  const vals=S.sel<0?TOTAL:DATA[S.sel][1],label=S.sel<0?"Total do dia":DATA[S.sel][0],max=Math.max(...vals);
+  return `<div class="chart"><span class="chart-title">Gráfico · ${label} (unidades vendidas)</span>
+    <div class="bars">${vals.map(v=>`<div class="bar" style="height:${Math.max(2,v/max*100)}%"><span>${v}</span></div>`).join("")}</div>
+    <div class="barlabels">${DAYS.map(d=>`<span>${d}</span>`).join("")}</div></div>`;
+}
+function challenge(i,answered){
+  S.step=2+QUIZ.length+i;progress();const C=CHALLENGE[i];
+  app.innerHTML=`<section class="panel">
+    <div class="eyebrow">Missão 2 · Detetive de dados</div>
+    <p><b>Cenário:</b> você foi contratado(a) pelo café-escola. Esta é a venda da última semana. Clique no nome de um produto para ver o gráfico.</p>
+    ${tableHTML()}${chartHTML()}
+    <span class="qcount">Desafio ${i+1} de ${CHALLENGE.length} · vale 100 pontos</span>
+    <h2>${C.q}</h2>
+    <div class="opts">${C.o.map((o,k)=>`<button class="opt" data-k="${k}">${o}</button>`).join("")}</div>
+    <div id="fb"></div>
+  </section>`;
+  app.querySelectorAll(".prod").forEach(b=>b.onclick=()=>{S.sel=+b.dataset.k;
+    const box=app.querySelector(".tablebox");box.outerHTML=tableHTML();
+    app.querySelector(".chart").outerHTML=chartHTML();rebindProd(i)});
+  app.querySelectorAll(".opt").forEach(b=>b.onclick=()=>answer(i,+b.dataset.k));
+}
+function rebindProd(i){app.querySelectorAll(".prod").forEach(b=>b.onclick=()=>{S.sel=+b.dataset.k;
+  app.querySelector(".tablebox").outerHTML=tableHTML();app.querySelector(".chart").outerHTML=chartHTML();rebindProd(i)})}
+function answer(i,k){
+  const C=CHALLENGE[i],ok=k===C.a;if(ok){S.points+=100;S.right++}progress();
+  app.querySelectorAll(".opt").forEach((b,j)=>{b.disabled=true;if(j===C.a)b.classList.add("right");else if(j===k)b.classList.add("wrong")});
+  document.getElementById("fb").innerHTML=`<div class="feedback ${ok?"ok":"no"}">${ok?"Acertou! +100 pontos":"Quase!"}<span>${C.why}</span></div>
+    <div class="row" style="margin-top:14px"><button class="btn alt" id="nx">${i+1<CHALLENGE.length?"Próximo desafio":"Ver meu cartão"}</button></div>`;
+  const nx=document.getElementById("nx");nx.focus();nx.onclick=()=>i+1<CHALLENGE.length?challenge(i+1):final();
+}
+function final(){
+  S.step=STEPS-1;progress();const P=PROFILES[S.profile];
+  const msg=S.right===3?"Mandou muito. Você já pensa como profissional de dados.":S.right===2?"Muito bem! Com um pouco de prática, você chega lá rápido.":"Todo profissional começou assim. É para isso que existe curso.";
+  app.innerHTML=`<section class="panel">
+    <div class="eyebrow">Missão cumprida</div>
+    <div class="card-final">
+      <small>Cartão do Futuro · Experience Day Senac</small>
+      <h2>${esc(S.name)}</h2>
+      <div>${P.name}</div>
+      <div class="big">${S.points} pts</div>
+      <small>${S.right} de 3 desafios de dados</small>
+    </div>
+    <p class="lead">${msg}</p>
+    <p><b>Mostre esta tela para o palestrante.</b> E aproveite para perguntar à equipe do Senac quais cursos levam ao caminho de <b>${P.name}</b>.</p>
+    <button class="btn" id="again">Jogar de novo</button>
+  </section>`;
+  document.getElementById("again").onclick=()=>{S={name:"",step:0,points:0,votes:{},profile:null,ci:0,sel:-1,right:0};intro()};
+}
+intro();
+</script>
+
+</body>
+</html>
