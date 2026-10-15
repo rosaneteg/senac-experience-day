@@ -44,22 +44,6 @@ A palestra completa dura 30 minutos, e a atividade ocupa cerca de 12 deles no la
 | 22–25 min | Enquete por perfil, premiação e explicação do que eles fizeram |
 | 25–30 min | Caminhos no Senac e perguntas |
 
-O roteiro detalhado, com o que falar em cada momento e as respostas da Missão 2, está nas **anotações do apresentador** dos slides.
-
-### Publicar com o GitHub Pages
-
-1. Confirme que o arquivo da atividade se chama `index.html` e está na raiz do repositório.
-2. No repositório, vá em **Settings → Pages**.
-3. Em **Branch**, escolha `main` e a pasta `/ (root)`, e clique em **Save**.
-4. Em um ou dois minutos, o link aparece no topo da página. O formato é `https://SEU-USUARIO.github.io/NOME-DO-REPOSITORIO/`.
-5. Encurte o link ou gere um QR code e coloque no slide da Missão.
-
-**Antes do evento:** abra o link em um computador do laboratório para conferir se a rede da unidade não bloqueia o endereço.
-
-### Usar sem internet
-
-Se a rede do laboratório for instável, baixe o `index.html` e abra o arquivo direto no navegador de cada computador. A atividade funciona offline; só as fontes do texto mudam para as fontes padrão do sistema.
-
 ### Dicas de condução
 
 - Durante a Missão 2, ajude com perguntas, não com respostas: *“Qual dia vendeu mais?”*, *“O que mudou junto com o suco?”*.
@@ -96,8 +80,6 @@ Se você mudar os números da tabela, revise também as respostas certas (`a:`) 
 └── README.md      # este arquivo
 ```
 
-Se quiser, adicione também a apresentação (`Profissoes_do_Futuro_Senac.pptx`) para que outros professores reaproveitem a palestra.
-
 ---
 
 ## Créditos
@@ -106,4 +88,4 @@ Atividade desenvolvida para o **Experience Day · Senac**.
 Os dados de mercado citados na palestra vêm do relatório *Future of Jobs 2025*, do Fórum Econômico Mundial.
 Os dados de vendas do café são fictícios e foram criados para fins didáticos.
 
-Responsável: **[seu nome]** · [unidade Senac] · [contato]
+Responsável: **Rosanete Grassiani dos Santos** · [Senac Portão] · [rosanete.santos@docente.pr.senac.br]
